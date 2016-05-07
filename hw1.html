@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 5%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #880088
+}
+
+body {
+  overflow: hidden;
+}
+
+</style>
+</head>
+
+<body> 
+<div id="info">I4B39 CG_Hw1
+  <br/>
+  <br/>
+  <button id="analog" style="width:15%">Analog</button>
+  <button id="quartz" style="width:15%">Quartz</button>
+  <button id="reset" style="width:15%">Reset</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script>
+var scene, renderer, camera;
+var controls;
+var angle = 0;
+var analog = false, quartz = false;
+var clock = new THREE.Clock();
+var timer = new THREE.Object3D();
+var circle_second;
+
+init();
+animate();
+
+$("#analog").click(function() {
+  analog = !analog;
+  sector = false;
+  quartz = false;
+});
+
+$("#quartz").click(function() {
+  quartz = !quartz;
+  analog = false;
+  sector = false;
+});
+
+$("#reset").click(function() {
+  reset();
+  scene.remove(circle_second);
+  timer.rotation.z = 0;
+});
+
+function init() {
+  scene = new THREE.Scene();
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x666666);
+  document.body.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 400;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+	/************************************************************/
+  var circle_geometry = new THREE.CircleGeometry(100, 60);
+  var circle_material = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide
+  });
+  var circle = new THREE.Mesh(circle_geometry, circle_material);
+  scene.add(circle);
+  
+  /************************************************************/
+  var clock_geometry_3_9 = new THREE.BoxGeometry(5, 5, 5);
+  var clock_geometry_0_6 = new THREE.BoxGeometry(5, 5, 5);
+  var clock_material = new THREE.MeshBasicMaterial({
+    color: 0x0000ff,
+    side: THREE.DoubleSide
+  });
+
+  var clock_0 = new THREE.Mesh(clock_geometry_0_6, clock_material);
+  var clock_6 = clock_0.clone();
+  scene.add(clock_0);
+  scene.add(clock_6);
+  clock_0.position.set(0, 100, 0);
+  clock_6.position.set(0, -100, 0);
+  
+  var clock_3 = new THREE.Mesh(clock_geometry_3_9, clock_material);
+  var clock_9 = clock_3.clone();
+  scene.add(clock_3);
+  scene.add(clock_9);
+  clock_3.position.set(100, 0, 0);
+  clock_9.position.set(-100, 0, 0);
+	/************************************************************/
+  
+  var secondhand_geomerty = new THREE.BoxGeometry(60, 5, 5);
+  var secondhand_material = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    side: THREE.DoubleSide
+  });
+  var secondhand = new THREE.Mesh(secondhand_geomerty, secondhand_material);
+  timer.add(secondhand);
+  secondhand.rotation.z = Math.PI / 2;
+  secondhand.translateOnAxis(new THREE.Vector3(1, 0, 0), 80 / 2);
+  secondhand.translateOnAxis(new THREE.Vector3(0, 0, 1), 5 / 2 + .1);
+
+  scene.add(timer);
+  window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function drawCircle() {
+  scene.remove(circle_second);
+  var geometry = new THREE.CircleGeometry(80, 60, Math.PI / 2, -angle);
+  var material = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    side: THREE.DoubleSide
+  });
+  
+  circle_second = new THREE.Mesh(geometry, material);
+  circle_second.position.z = 1;
+  scene.add(circle_second);
+}
+
+function animate() {
+  var dt = clock.getDelta();
+  controls.update();
+  if(analog) {
+    angle += dt;
+    timer.rotation.z = -angle * Math.PI / 30;
+  }
+
+  if(quartz) {
+    angle += dt;
+    timer.rotation.z = -Math.floor(angle) * 6 / 180 * Math.PI;
+  }
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+function reset() {
+  angle = 0;
+  analog = false;
+  sector = false;
+  quartz = false;
+}
+</script>
+</body>
+
+</html>
